@@ -6,20 +6,22 @@ import type { InboxItem } from '../../api/emailApi';
 import ComposeModal from '../../components/mail/ComposeModal';
 
 const Inbox = () => {
-    const { currentUser, logout } = useAuth();
+    const { currentUser, logout, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [emails, setEmails] = useState<InboxItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [showCompose, setShowCompose] = useState(false);
 
     useEffect(() => {
+        if (authLoading) return;
         if (!currentUser) return;
 
+        setLoading(true);
         getInbox(currentUser.idUser)
             .then(setEmails)
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [currentUser]);
+    }, [currentUser, authLoading]);
 
     const handleMarkAsRead = async (recipientId: string) => {
         await markAsRead(recipientId);
