@@ -1,19 +1,33 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginUser } from '../../api/authApi';
+import { saveToken } from '../../utils/auth';
 
-// Por ahora solo UI — la conexión real va cuando JWT esté listo en el backend
 const Login = () => {
+    const navigate = useNavigate();
     const [form, setForm] = useState({ email: '', password: '' });
-    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Placeholder hasta que el endpoint /auth/login exista
-        setMessage('Login pendiente — JWT en construcción');
+        setError(null);
+        setLoading(true);
+
+        try {
+            const { token } = await loginUser(form);
+            saveToken(token);
+            navigate('/inbox'); // redirige al inbox después del login
+        } catch (err: any) {
+            const backendError = err.response?.data;
+            setError(backendError?.message ?? 'Error al iniciar sesión');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,9 +56,11 @@ const Login = () => {
                     />
                 </div>
 
-                {message && <p style={{ color: 'orange' }}>{message}</p>}
+                {error && <p style={{ color: 'red' }}>{error}</p>}
 
-                <button type="submit">Entrar</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Entrando...' : 'Entrar'}
+                </button>
             </form>
 
             <p>
