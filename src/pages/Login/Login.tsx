@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faLock, faTriangleExclamation, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { loginUser } from '../../api/authApi';
 import { saveToken } from '../../utils/auth';
+import styles from './Login.module.css';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -17,55 +20,77 @@ const Login = () => {
         e.preventDefault();
         setError(null);
         setLoading(true);
-
         try {
             const { token } = await loginUser(form);
             saveToken(token);
-            navigate('/inbox'); // redirige al inbox después del login
+            navigate('/inbox');
         } catch (err: any) {
-            const backendError = err.response?.data;
-            setError(backendError?.message ?? 'Error al iniciar sesión');
+            setError(err.response?.data?.message ?? 'Email o contraseña incorrectos');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div>
-            <h2>Iniciar sesión</h2>
-
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email</label>
-                    <input
-                        name="email"
-                        type="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        placeholder="juan@jtmail.co"
-                    />
+        <div className={styles.wrapper}>
+            <div className={styles.card}>
+                <div className={styles.logo}>
+                    <div className={styles.logoIcon}>
+                        <FontAwesomeIcon icon={faPaperPlane} />
+                    </div>
+                    <span className={styles.logoText}>jtmail</span>
                 </div>
 
-                <div>
-                    <label>Contraseña</label>
-                    <input
-                        name="password"
-                        type="password"
-                        value={form.password}
-                        onChange={handleChange}
-                    />
-                </div>
+                <h1 className={styles.title}>Bienvenido</h1>
+                <p className={styles.subtitle}>Inicia sesión en tu cuenta</p>
 
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Email</label>
+                        <div className={styles.inputWrapper}>
+                            <input
+                                className={styles.input}
+                                name="email"
+                                type="email"
+                                value={form.email}
+                                onChange={handleChange}
+                                placeholder="juan@jtmail.co"
+                            />
+                            <FontAwesomeIcon icon={faEnvelope} className={styles.inputIcon} />
+                        </div>
+                    </div>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Entrando...' : 'Entrar'}
-                </button>
-            </form>
+                    <div className={styles.field}>
+                        <label className={styles.label}>Contraseña</label>
+                        <div className={styles.inputWrapper}>
+                            <input
+                                className={styles.input}
+                                name="password"
+                                type="password"
+                                value={form.password}
+                                onChange={handleChange}
+                                placeholder="••••••••"
+                            />
+                            <FontAwesomeIcon icon={faLock} className={styles.inputIcon} />
+                        </div>
+                    </div>
 
-            <p>
-                ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
-            </p>
+                    {error && (
+                        <div className={styles.error}>
+                            <FontAwesomeIcon icon={faTriangleExclamation} />
+                            {error}
+                        </div>
+                    )}
+
+                    <button className={styles.submitBtn} type="submit" disabled={loading}>
+                        {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+                    </button>
+                </form>
+
+                <p className={styles.footer}>
+                    ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
+                </p>
+            </div>
         </div>
     );
 };

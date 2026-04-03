@@ -1,0 +1,64 @@
+/* Reutiliza los mismos estilos base de Login — solo cambia el título */
+.wrapper {
+    composes: wrapper from '../Login/Login.module.css';
+}
+
+.card {
+    composes: card from '../Login/Login.module.css';
+}
+
+.logo {
+    composes: logo from '../Login/Login.module.css';
+}
+
+.logoIcon {
+    composes: logoIcon from '../Login/Login.module.css';
+}
+
+.logoText {
+    composes: logoText from '../Login/Login.module.css';
+}
+
+.title {
+    composes: title from '../Login/Login.module.css';
+}
+
+.subtitle {
+    composes: subtitle from '../Login/Login.module.css';
+}
+
+.form {
+    composes: form from '../Login/Login.module.css';
+}
+
+.field {
+    composes: field from '../Login/Login.module.css';
+}
+
+.label {
+    composes: label from '../Login/Login.module.css';
+}
+
+.inputWrapper {
+    composes: inputWrapper from '../Login/Login.module.css';
+}
+
+.inputIcon {
+    composes: inputIcon from '../Login/Login.module.css';
+}
+
+.input {
+    composes: input from '../Login/Login.module.css';
+}
+
+.error {
+    composes: error from '../Login/Login.module.css';
+}
+
+.submitBtn {
+    composes: submitBtn from '../Login/Login.module.css';
+}
+
+.footer {
+    composes: footer from '../Login/Login.module.css';
+}
