@@ -3,17 +3,18 @@ import { getMe } from '../api/authApi';
 import { isAuthenticated, removeToken } from '../utils/auth';
 import type { UserResponse } from '../types/user.types';
 
-
 interface AuthContextType {
     currentUser: UserResponse | null;
     loading: boolean;
     logout: () => void;
+    setCurrentUser: (user: UserResponse | null) => void; // ← nuevo
 }
 
 const AuthContext = createContext<AuthContextType>({
     currentUser: null,
     loading: true,
     logout: () => { },
+    setCurrentUser: () => { },
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -21,11 +22,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Al montar la app, si hay token intenta cargar el usuario actual
         if (isAuthenticated()) {
             getMe()
                 .then(setCurrentUser)
-                .catch(() => removeToken()) // token expirado o inválido
+                .catch(() => removeToken())
                 .finally(() => setLoading(false));
         } else {
             setLoading(false);
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ currentUser, loading, logout }}>
+        <AuthContext.Provider value={{ currentUser, loading, logout, setCurrentUser }}>
             {children}
         </AuthContext.Provider>
     );

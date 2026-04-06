@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faTriangleExclamation, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { loginUser } from '../../api/authApi';
+import { loginUser, getMe } from '../../api/authApi'; // ← agrega getMe
 import { saveToken } from '../../utils/auth';
+import { useAuth } from '../../context/AuthContext';   // ← agrega useAuth
 import styles from './Login.module.css';
 
 const Login = () => {
     const navigate = useNavigate();
+    const { setCurrentUser } = useAuth(); // ← agrega esto
     const [form, setForm] = useState({ email: '', password: '' });
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -23,6 +25,12 @@ const Login = () => {
         try {
             const { token } = await loginUser(form);
             saveToken(token);
+
+            // Carga el usuario inmediatamente y lo mete en el contexto
+            // antes de navegar — así Inbox ya lo tiene disponible al montar
+            const user = await getMe();
+            setCurrentUser(user);
+
             navigate('/inbox');
         } catch (err: any) {
             setError(err.response?.data?.message ?? 'Email o contraseña incorrectos');

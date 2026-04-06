@@ -59,3 +59,18 @@ export const toggleStar = async (recipientId: string): Promise<void> => {
 export const moveToTrash = async (recipientId: string): Promise<void> => {
     await axiosClient.patch(`/emails/trash/${recipientId}`);
 };
+
+export const getStarred = async (userId: string): Promise<InboxItem[]> => {
+    const response = await axiosClient.get<InboxItem[]>(`/emails/starred/${userId}`);
+    return response.data;
+};
+
+export const getTrash = async (userId: string): Promise<InboxItem[]> => {
+    const response = await axiosClient.get<InboxItem[]>(`/emails/trash/${userId}`);
+    return response.data;
+};
+
+export const getDrafts = async (userId: string): Promise<EmailDetail[]> => {
+    const response = await axiosClient.get<EmailDetail[]>(`/emails/drafts/${userId}`);
+    return response.data;
+};

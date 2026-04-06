@@ -7,10 +7,13 @@ import {
     faTrashCan, faStar as faStarSolid, faEnvelopeOpen
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
-import { getInbox, markAsRead, toggleStar, moveToTrash } from '../../api/emailApi';
-import type { InboxItem } from '../../api/emailApi';
+import { getInbox, getStarred, getTrash, getDrafts, markAsRead, toggleStar, moveToTrash } from '../../api/emailApi';
+import type { InboxItem, EmailDetail } from '../../api/emailApi';
 import ComposeModal from '../../components/mail/ComposeModal';
 import styles from './Inbox.module.css';
+
+// Secciones disponibles en el sidebar
+type Section = 'inbox' | 'starred' | 'trash' | 'drafts';
 
 const Inbox = () => {
     const { currentUser, logout, loading: authLoading } = useAuth();
@@ -18,15 +21,41 @@ const Inbox = () => {
     const [emails, setEmails] = useState<InboxItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [showCompose, setShowCompose] = useState(false);
+    const [section, setSection] = useState<Section>('inbox');
 
     useEffect(() => {
         if (authLoading || !currentUser) return;
+
         setLoading(true);
-        getInbox(currentUser.idUser)
+        setEmails([]); // limpia la lista al cambiar de sección
+
+        // Cada sección llama a su propio endpoint
+        // Drafts adapta EmailDetail al shape de InboxItem para reutilizar el mismo listado
+        const fetchers: Record<Section, () => Promise<InboxItem[]>> = {
+            inbox: () => getInbox(currentUser.idUser),
+            starred: () => getStarred(currentUser.idUser),
+            trash: () => getTrash(currentUser.idUser),
+            drafts: () => getDrafts(currentUser.idUser).then((drafts: EmailDetail[]) =>
+                drafts.map(d => ({
+                    idRecipient: d.idEmail,
+                    emailId: d.idEmail,
+                    subject: d.subject,
+                    senderName: currentUser.fullName,
+                    senderEmail: currentUser.email,
+                    isRead: true,
+                    isStarred: false,
+                    isArchived: false,
+                    isTrashed: false,
+                    sentAt: d.createdAt,
+                }))
+            ),
+        };
+
+        fetchers[section]()
             .then(setEmails)
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [currentUser, authLoading]);
+    }, [currentUser, authLoading, section]); // ← section como dependencia
 
     const handleMarkAsRead = async (recipientId: string) => {
         await markAsRead(recipientId);
@@ -52,11 +81,28 @@ const Inbox = () => {
     const handleLogout = () => { logout(); navigate('/login'); };
 
     const unreadCount = emails.filter(e => !e.isRead).length;
-    const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
+    const getInitials = (name: string) =>
+        name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
     const formatDate = (dateStr: string) => {
         const d = new Date(dateStr);
         return d.toLocaleDateString('es-CO', { month: 'short', day: 'numeric' });
     };
+
+    const titles: Record<Section, string> = {
+        inbox: 'Bandeja de entrada',
+        starred: 'Destacados',
+        trash: 'Papelera',
+        drafts: 'Borradores',
+    };
+
+    const navItems = [
+        { key: 'inbox' as Section, icon: faInbox, label: 'Bandeja' },
+        { key: 'starred' as Section, icon: faStarSolid, label: 'Destacados' },
+        { key: 'drafts' as Section, icon: faFile, label: 'Borradores' },
+        { key: 'trash' as Section, icon: faTrash, label: 'Papelera' },
+    ];
 
     return (
         <div className={styles.layout}>
@@ -75,21 +121,15 @@ const Inbox = () => {
                 </button>
 
                 <nav className={styles.nav}>
-                    <button className={`${styles.navItem} ${styles.navItemActive}`}>
-                        <FontAwesomeIcon icon={faInbox} /> Bandeja
-                    </button>
-                    <button className={styles.navItem}>
-                        <FontAwesomeIcon icon={faStarSolid} /> Destacados
-                    </button>
-                    <button className={styles.navItem}>
-                        <FontAwesomeIcon icon={faSent} /> Enviados
-                    </button>
-                    <button className={styles.navItem}>
-                        <FontAwesomeIcon icon={faFile} /> Borradores
-                    </button>
-                    <button className={styles.navItem}>
-                        <FontAwesomeIcon icon={faTrash} /> Papelera
-                    </button>
+                    {navItems.map(({ key, icon, label }) => (
+                        <button
+                            key={key}
+                            className={`${styles.navItem} ${section === key ? styles.navItemActive : ''}`}
+                            onClick={() => setSection(key)}
+                        >
+                            <FontAwesomeIcon icon={icon} /> {label}
+                        </button>
+                    ))}
                 </nav>
 
                 <div className={styles.sidebarFooter}>
@@ -109,8 +149,8 @@ const Inbox = () => {
             <main className={styles.main}>
                 <div className={styles.toolbar}>
                     <div>
-                        <span className={styles.toolbarTitle}>Bandeja de entrada</span>
-                        {unreadCount > 0 && (
+                        <span className={styles.toolbarTitle}>{titles[section]}</span>
+                        {section === 'inbox' && unreadCount > 0 && (
                             <span className={styles.unreadBadge}>{unreadCount} nuevos</span>
                         )}
                     </div>
@@ -124,7 +164,7 @@ const Inbox = () => {
                 ) : emails.length === 0 ? (
                     <div className={styles.emptyState}>
                         <FontAwesomeIcon icon={faEnvelopeOpen} />
-                        <p>Tu bandeja está vacía</p>
+                        <p>No hay correos en esta sección</p>
                     </div>
                 ) : (
                     <ul className={styles.emailList}>
@@ -133,7 +173,9 @@ const Inbox = () => {
                                 key={email.idRecipient}
                                 className={`${styles.emailItem} ${!email.isRead ? styles.emailUnread : ''}`}
                                 onClick={() => {
-                                    handleMarkAsRead(email.idRecipient);
+                                    if (section !== 'drafts') {
+                                        handleMarkAsRead(email.idRecipient);
+                                    }
                                     navigate(`/email/${email.emailId}`);
                                 }}
                             >
@@ -151,20 +193,26 @@ const Inbox = () => {
                                     <div className={styles.emailSubject}>{email.subject}</div>
                                 </div>
                                 <div className={styles.emailActions}>
-                                    <button
-                                        className={`${styles.actionBtn} ${email.isStarred ? styles.starActive : ''}`}
-                                        onClick={(e) => handleToggleStar(e, email.idRecipient)}
-                                        title="Destacar"
-                                    >
-                                        <FontAwesomeIcon icon={faStar} />
-                                    </button>
-                                    <button
-                                        className={styles.actionBtn}
-                                        onClick={(e) => handleMoveToTrash(e, email.idRecipient)}
-                                        title="Eliminar"
-                                    >
-                                        <FontAwesomeIcon icon={faTrashCan} />
-                                    </button>
+                                    {/* Star solo en inbox y starred */}
+                                    {(section === 'inbox' || section === 'starred') && (
+                                        <button
+                                            className={`${styles.actionBtn} ${email.isStarred ? styles.starActive : ''}`}
+                                            onClick={(e) => handleToggleStar(e, email.idRecipient)}
+                                            title="Destacar"
+                                        >
+                                            <FontAwesomeIcon icon={faStar} />
+                                        </button>
+                                    )}
+                                    {/* Trash solo en inbox y starred */}
+                                    {(section === 'inbox' || section === 'starred') && (
+                                        <button
+                                            className={styles.actionBtn}
+                                            onClick={(e) => handleMoveToTrash(e, email.idRecipient)}
+                                            title="Eliminar"
+                                        >
+                                            <FontAwesomeIcon icon={faTrashCan} />
+                                        </button>
+                                    )}
                                 </div>
                             </li>
                         ))}
