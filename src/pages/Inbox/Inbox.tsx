@@ -2,9 +2,17 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faPaperPlane, faInbox, faStar, faPaperPlane as faSent,
-    faFile, faTrash, faSignOut, faPen, faSpinner,
-    faTrashCan, faStar as faStarSolid, faEnvelopeOpen
+    faPaperPlane,
+    faInbox,
+    faStar,
+    faFile,
+    faTrash,
+    faSignOut,
+    faPen,
+    faSpinner,
+    faTrashCan,
+    faStar as faStarSolid,
+    faEnvelopeOpen
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import { getInbox, getStarred, getTrash, getDrafts, markAsRead, toggleStar, moveToTrash } from '../../api/emailApi';
