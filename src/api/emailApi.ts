@@ -70,6 +70,7 @@ export const getTrash = async (userId: string): Promise<InboxItem[]> => {
     return response.data;
 };
 
+// Endpoints for drafts
 export const getDrafts = async (userId: string): Promise<EmailDetail[]> => {
     const response = await axiosClient.get<EmailDetail[]>(`/emails/drafts/${userId}`);
     return response.data;
