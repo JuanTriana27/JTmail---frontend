@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useTheme } from '../../context/ThemeContext';
+import { faSun, faMoon } from '@fortawesome/free-solid-svg-icons';
 import {
     faPaperPlane,
     faInbox,
@@ -112,6 +114,8 @@ const Inbox = () => {
         { key: 'trash' as Section, icon: faTrash, label: 'Papelera' },
     ];
 
+    const { theme, toggleTheme } = useTheme();
+
     return (
         <div className={styles.layout}>
             {/* Sidebar */}
@@ -162,6 +166,13 @@ const Inbox = () => {
                             <span className={styles.unreadBadge}>{unreadCount} nuevos</span>
                         )}
                     </div>
+                    <button
+                        onClick={toggleTheme}
+                        className={styles.themeBtn}
+                        title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                    >
+                        <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
+                    </button>
                 </div>
 
                 {loading ? (

@@ -139,3 +139,22 @@
 .spinner {
     animation: spin 0.8s linear infinite;
 }
+
+@media (max-width: 768px) {
+    .topbar {
+        padding: 12px 16px;
+    }
+
+    .content {
+        padding: 24px 16px;
+    }
+
+    .subject {
+        font-size: 20px;
+    }
+
+    .meta {
+        padding: 12px 14px;
+        gap: 10px;
+    }
+}

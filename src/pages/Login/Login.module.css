@@ -213,3 +213,14 @@
 .footer a {
     font-weight: 500;
 }
+
+@media (max-width: 480px) {
+    .card {
+        padding: 28px 20px;
+        border-radius: var(--radius-md);
+    }
+
+    .title {
+        font-size: 22px;
+    }
+}

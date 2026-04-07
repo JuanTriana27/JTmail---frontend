@@ -384,3 +384,95 @@
 .spinner {
     animation: spin 0.8s linear infinite;
 }
+
+/* ── Responsive ───────────────────────────── */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
+        height: 100dvh;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 0 0;
+        flex-shrink: 0;
+    }
+
+    .sidebarLogo {
+        padding: 0 16px 12px;
+    }
+
+    .composeBtn {
+        margin: 8px 16px;
+    }
+
+    .nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 8px 8px;
+        gap: 4px;
+        scrollbar-width: none;
+    }
+
+    .nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .navItem {
+        flex-shrink: 0;
+        padding: 7px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .navItemActive {
+        border-right: none;
+        border-bottom: 2px solid var(--accent);
+    }
+
+    .sidebarFooter {
+        display: none;
+        /* en móvil el logout va en el toolbar */
+    }
+
+    .toolbar {
+        padding: 12px 16px;
+    }
+
+    .emailItem {
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .emailActions {
+        opacity: 1;
+        /* siempre visible en móvil */
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .emailAvatar {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .emailSender {
+        font-size: 13px;
+    }
+
+    .emailSubject {
+        font-size: 12px;
+    }
+
+    .toolbarTitle {
+        font-size: 16px;
+    }
+}
