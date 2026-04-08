@@ -158,3 +158,36 @@
         gap: 10px;
     }
 }
+
+.replyBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(110, 231, 183, 0.3);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    transition: all var(--transition);
+}
+
+.replyBtn:hover {
+    background: var(--accent);
+    color: #0a0a0f;
+    border-color: var(--accent);
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        padding: 12px 16px;
+        gap: 8px;
+    }
+
+    .replyBtn span {
+        display: none;
+        /* solo icono en móvil */
+    }
+}

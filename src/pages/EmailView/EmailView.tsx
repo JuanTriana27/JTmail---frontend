@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faSpinner, faReply } from '@fortawesome/free-solid-svg-icons';
 import { getEmailById } from '../../api/emailApi';
 import type { EmailDetail } from '../../api/emailApi';
+import ComposeModal from '../../components/mail/ComposeModal';
 import styles from './EmailView.module.css';
 
 const EmailView = () => {
@@ -11,6 +12,7 @@ const EmailView = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState<EmailDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [showReply, setShowReply] = useState(false);
 
     useEffect(() => {
         if (!emailId) return;
@@ -41,6 +43,15 @@ const EmailView = () => {
                     <FontAwesomeIcon icon={faArrowLeft} />
                     Volver al inbox
                 </button>
+
+                {/* Botón de responder */}
+                <button
+                    className={styles.replyBtn}
+                    onClick={() => setShowReply(true)}
+                >
+                    <FontAwesomeIcon icon={faReply} />
+                    Responder
+                </button>
             </div>
 
             <div className={styles.content}>
@@ -65,6 +76,15 @@ const EmailView = () => {
                 <hr className={styles.divider} />
                 <p className={styles.body}>{email.body}</p>
             </div>
+
+            {/* Modal de respuesta — reutiliza el threadId del correo actual */}
+            {showReply && (
+                <ComposeModal
+                    onClose={() => setShowReply(false)}
+                    onSent={() => setShowReply(false)}
+                    replyThreadId={email.threadId}
+                />
+            )}
         </div>
     );
 };

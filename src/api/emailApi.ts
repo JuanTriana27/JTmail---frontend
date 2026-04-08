@@ -18,6 +18,7 @@ export interface EmailDetail {
     threadId: string;
     senderId: string;
     senderName: string;
+    senderEmail: string;
     subject: string;
     body: string;
     status: string;
@@ -73,5 +74,11 @@ export const getTrash = async (userId: string): Promise<InboxItem[]> => {
 // Endpoints for drafts
 export const getDrafts = async (userId: string): Promise<EmailDetail[]> => {
     const response = await axiosClient.get<EmailDetail[]>(`/emails/drafts/${userId}`);
+    return response.data;
+};
+
+// Emails enviados
+export const getSentEmails = async (userId: string): Promise<EmailDetail[]> => {
+    const response = await axiosClient.get<EmailDetail[]>(`/emails/sent/${userId}`);
     return response.data;
 };

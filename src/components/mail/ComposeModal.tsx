@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPaperPlane, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
@@ -11,25 +11,38 @@ interface Props {
     onClose: () => void;
     onSent: (email: EmailDetail) => void;
     replyThreadId?: string;
+    replyToEmail?: string;
 }
 
-const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
+const ComposeModal = ({ onClose, onSent, replyThreadId, replyToEmail }: Props) => {
     const { currentUser } = useAuth();
-    const [form, setForm] = useState({ toEmail: '', subject: '', body: '' });
+    const [form, setForm] = useState({
+        toEmail: replyToEmail ?? '',
+        subject: '',
+        body: ''
+    });
     const [error, setError] = useState<string | null>(null);
     const [sending, setSending] = useState(false);
     const [suggestions, setSuggestions] = useState<UserResponse[]>([]);
     const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
 
+    // Si es una respuesta, busca y preselecciona el destinatario al montar
+    useEffect(() => {
+        if (!replyToEmail) return;
+        getAllUsers().then(users => {
+            const found = users.find(u => u.email === replyToEmail);
+            if (found) setSelectedUser(found);
+        }).catch(console.error);
+    }, [replyToEmail]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    // Busca usuarios mientras el usuario escribe el email
     const handleToChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setForm(prev => ({ ...prev, toEmail: value }));
-        setSelectedUser(null); // resetea selección si edita manualmente
+        setSelectedUser(null);
 
         if (value.length >= 2) {
             try {
@@ -37,7 +50,7 @@ const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
                 setSuggestions(
                     users.filter(u =>
                         u.email.toLowerCase().includes(value.toLowerCase()) &&
-                        u.idUser !== currentUser?.idUser // excluye al remitente
+                        u.idUser !== currentUser?.idUser
                     )
                 );
             } catch {
@@ -61,7 +74,6 @@ const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
         }
         if (!currentUser) return;
 
-        // Resuelve el UUID del destinatario desde el email ingresado
         let recipientId = selectedUser?.idUser;
         if (!recipientId) {
             try {
@@ -94,54 +106,40 @@ const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
         }
     };
 
+    // Detecta desktop para posicionar el modal correctamente
     const isDesktop = window.innerWidth > 768;
 
     return (
         <div style={{
             position: 'fixed',
-            // En móvil ocupa toda la pantalla, en desktop va abajo a la derecha
-            bottom: 0,
-            right: 0,
-            left: 0,
-            top: 'auto',
-            width: '100%',
-            maxWidth: '400px',
-            margin: '0 auto',
+            bottom: isDesktop ? 24 : 0,
+            right: isDesktop ? 24 : 0,
+            left: isDesktop ? 'auto' : 0,
+            width: isDesktop ? 440 : '100%',
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+            borderRadius: isDesktop
+                ? 'var(--radius-lg)'
+                : 'var(--radius-lg) var(--radius-lg) 0 0',
             zIndex: 1000,
             boxShadow: 'var(--shadow-md)',
             overflow: 'visible'
         }}>
-            <div style={{
-                position: 'fixed',
-                bottom: isDesktop ? 24 : 0,
-                right: isDesktop ? 24 : 0,
-                left: isDesktop ? 'auto' : 0,
-                width: isDesktop ? 440 : '100%',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: isDesktop
-                    ? 'var(--radius-lg)'
-                    : 'var(--radius-lg) var(--radius-lg) 0 0',
-                zIndex: 1000,
-                boxShadow: 'var(--shadow-md)',
-                overflow: 'visible'
-            }}></div>
             {/* Header */}
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '14px 18px',
                 background: 'var(--bg-secondary)',
                 borderBottom: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
+                borderRadius: isDesktop
+                    ? 'var(--radius-lg) var(--radius-lg) 0 0'
+                    : 'var(--radius-lg) var(--radius-lg) 0 0'
             }}>
                 <span style={{
                     fontFamily: 'var(--font-display)', fontSize: 14,
                     fontWeight: 700, color: 'var(--text-primary)'
                 }}>
-                    Nuevo correo
+                    {replyToEmail ? 'Responder correo' : 'Nuevo correo'}
                 </span>
                 <button onClick={onClose} style={{
                     background: 'transparent', color: 'var(--text-muted)',
@@ -154,8 +152,6 @@ const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
 
             {/* Campos */}
             <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-                {/* Campo To con autocompletado */}
                 <div style={{ position: 'relative' }}>
                     <input
                         name="toEmail"

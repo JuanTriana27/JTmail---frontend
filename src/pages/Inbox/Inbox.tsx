@@ -17,13 +17,13 @@ import {
     faEnvelopeOpen
 } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
-import { getInbox, getStarred, getTrash, getDrafts, markAsRead, toggleStar, moveToTrash } from '../../api/emailApi';
+import { getInbox, getStarred, getTrash, getDrafts, getSentEmails, markAsRead, toggleStar, moveToTrash } from '../../api/emailApi';
 import type { InboxItem, EmailDetail } from '../../api/emailApi';
 import ComposeModal from '../../components/mail/ComposeModal';
 import styles from './Inbox.module.css';
 
 // Secciones disponibles en el sidebar
-type Section = 'inbox' | 'starred' | 'trash' | 'drafts';
+type Section = 'inbox' | 'starred' | 'trash' | 'drafts' | 'sent';
 
 const Inbox = () => {
     const { currentUser, logout, loading: authLoading } = useAuth();
@@ -57,6 +57,21 @@ const Inbox = () => {
                     isArchived: false,
                     isTrashed: false,
                     sentAt: d.createdAt,
+                }))
+            ),
+            // Enviados
+            sent: () => getSentEmails(currentUser.idUser).then((sent: EmailDetail[]) =>
+                sent.map(s => ({
+                    idRecipient: s.idEmail,
+                    emailId: s.idEmail,
+                    subject: s.subject,
+                    senderName: currentUser.fullName,
+                    senderEmail: currentUser.email,
+                    isRead: true,
+                    isStarred: false,
+                    isArchived: false,
+                    isTrashed: false,
+                    sentAt: s.sentAt,
                 }))
             ),
         };
@@ -105,11 +120,13 @@ const Inbox = () => {
         starred: 'Destacados',
         trash: 'Papelera',
         drafts: 'Borradores',
+        sent: 'Enviados',
     };
 
     const navItems = [
         { key: 'inbox' as Section, icon: faInbox, label: 'Bandeja' },
         { key: 'starred' as Section, icon: faStarSolid, label: 'Destacados' },
+        { key: 'sent' as Section, icon: faPaperPlane, label: 'Enviados' },
         { key: 'drafts' as Section, icon: faFile, label: 'Borradores' },
         { key: 'trash' as Section, icon: faTrash, label: 'Papelera' },
     ];
