@@ -125,6 +125,15 @@ const Inbox = () => {
                         <FontAwesomeIcon icon={faPaperPlane} />
                     </div>
                     <span className={styles.sidebarLogoText}>jtmail</span>
+                    {/* Logout — solo visible en móvil (en desktop está en el sidebar) */}
+                    <button
+                        className={styles.toolbarLogout}
+                        onClick={handleLogout}
+                        title="Cerrar sesión"
+                    >
+                        <FontAwesomeIcon icon={faSignOut} />
+                        <span>Salir</span>
+                    </button>
                 </div>
 
                 <button className={styles.composeBtn} onClick={() => setShowCompose(true)}>
@@ -166,13 +175,20 @@ const Inbox = () => {
                             <span className={styles.unreadBadge}>{unreadCount} nuevos</span>
                         )}
                     </div>
-                    <button
-                        onClick={toggleTheme}
-                        className={styles.themeBtn}
-                        title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                    >
-                        <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
-                    </button>
+
+                    {/* Botones de acción en el toolbar */}
+                    <div className={styles.toolbarActions}>
+                        {/* Toggle de tema — visible siempre */}
+                        <button
+                            onClick={toggleTheme}
+                            className={styles.themeBtn}
+                            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                        >
+                            <FontAwesomeIcon icon={theme === 'dark' ? faSun : faMoon} />
+                        </button>
+
+
+                    </div>
                 </div>
 
                 {loading ? (

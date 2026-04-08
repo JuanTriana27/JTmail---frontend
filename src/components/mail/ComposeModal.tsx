@@ -94,16 +94,41 @@ const ComposeModal = ({ onClose, onSent, replyThreadId }: Props) => {
         }
     };
 
+    const isDesktop = window.innerWidth > 768;
+
     return (
         <div style={{
-            position: 'fixed', bottom: 24, right: 24,
+            position: 'fixed',
+            // En móvil ocupa toda la pantalla, en desktop va abajo a la derecha
+            bottom: 0,
+            right: 0,
+            left: 0,
+            top: 'auto',
+            width: '100%',
+            maxWidth: '400px',
+            margin: '0 auto',
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            width: 440, zIndex: 1000,
+            borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+            zIndex: 1000,
             boxShadow: 'var(--shadow-md)',
             overflow: 'visible'
         }}>
+            <div style={{
+                position: 'fixed',
+                bottom: isDesktop ? 24 : 0,
+                right: isDesktop ? 24 : 0,
+                left: isDesktop ? 'auto' : 0,
+                width: isDesktop ? 440 : '100%',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: isDesktop
+                    ? 'var(--radius-lg)'
+                    : 'var(--radius-lg) var(--radius-lg) 0 0',
+                zIndex: 1000,
+                boxShadow: 'var(--shadow-md)',
+                overflow: 'visible'
+            }}></div>
             {/* Header */}
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
